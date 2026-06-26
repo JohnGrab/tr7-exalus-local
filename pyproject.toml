@@ -2,7 +2,7 @@
 name = "tr7-exalus-local"
 version = "1.0.0"
 requires-python = ">=3.12"
-dependencies = ["websockets>=14.0"]
+dependencies = ["websockets>=16.0"]
 
 [project.optional-dependencies]
 # pytest, pytest-asyncio, coverage, etc. are pinned transitively by
