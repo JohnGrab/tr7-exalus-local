@@ -5,9 +5,11 @@ requires-python = ">=3.12"
 dependencies = ["websockets>=16.0"]
 
 [project.optional-dependencies]
+# pytest, pytest-asyncio, coverage, etc. are pinned transitively by
+# pytest-homeassistant-custom-component to match Home Assistant core's test
+# requirements. Do NOT pin them here too — independent floors conflict with
+# those exact pins (e.g. pytest-asyncio==0.24.0) and break resolution.
 dev = [
-    "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
     "pytest-homeassistant-custom-component>=0.13.205",
 ]
 
