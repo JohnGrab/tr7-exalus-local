@@ -2,13 +2,13 @@
 name = "tr7-exalus-local"
 version = "1.0.0"
 requires-python = ">=3.12"
-dependencies = ["websockets>=14.0"]
+dependencies = ["websockets>=16.0"]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-    "pytest-homeassistant-custom-component>=0.13",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-homeassistant-custom-component>=0.13.205",
 ]
 
 [tool.pytest.ini_options]
