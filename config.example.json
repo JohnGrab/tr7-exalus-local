@@ -1,0 +1,8 @@
+{
+  "tr7": {
+    "host": "192.168.1.XXX",
+    "port": 81,
+    "serial_number": "YOUR_TR7_SERIAL",
+    "pin": "YOUR_TR7_PIN"
+  }
+}

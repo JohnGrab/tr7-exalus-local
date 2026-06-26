@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Setup TR7 Exalus (Local)",
+        "description": "Enter connection details for your TR7 control unit. Example: {example_host}",
+        "data": {
+          "host": "Host (IP Address)",
+          "port": "Port",
+          "serial_number": "Serial Number",
+          "pin": "PIN"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Check the host/IP and ensure the TR7 unit is accessible on your network.",
+      "invalid_auth": "Authentication failed. Check the serial number and PIN on the device label.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This TR7 device is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "TR7 Exalus Options",
+        "description": "Configure options for TR7 Exalus integration."
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "Resource": "/info/devices/device/state/changed",
+    "Data": {
+      "DeviceGuid": "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+      "DataType": "BlindPosition",
+      "state": {
+        "Position": 26,
+        "RawPosition": 18,
+        "Channel": 1,
+        "StateReliability": 0
+      }
+    },
+    "Status": 0,
+    "Method": 0,
+    "TransactionId": "00000000-0000-0000-0000-000000000001"
+  },
+  {
+    "Resource": "/info/devices/device/state/changed",
+    "Data": {
+      "DeviceGuid": "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+      "DataType": "SignalStrength",
+      "state": {
+        "Percentage": 85,
+        "Quality": 1,
+        "DidLastTaskSucceded": true,
+        "SuccededExecutionsPercentage": 100,
+        "SuccededTransmissionsPercentage": 100
+      }
+    },
+    "Status": 0,
+    "Method": 0,
+    "TransactionId": "00000000-0000-0000-0000-000000000002"
+  },
+  {
+    "Resource": "/info/devices/device/state/changed",
+    "Data": {
+      "DeviceGuid": "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+      "DataType": "BlindOpenCloseTime",
+      "state": {
+        "OpenTime": 11220,
+        "CloseTime": 11400,
+        "HallCounter": 0,
+        "StateReliability": 1
+      }
+    },
+    "Status": 0,
+    "Method": 0,
+    "TransactionId": "00000000-0000-0000-0000-000000000003"
+  },
+  {
+    "Resource": "/info/devices/device/state/changed",
+    "Data": {
+      "DeviceGuid": "11112222-3333-4444-5555-666677778888",
+      "DataType": "BlindPosition",
+      "state": {
+        "Position": 0,
+        "RawPosition": 0,
+        "Channel": 1,
+        "StateReliability": 0
+      }
+    },
+    "Status": 0,
+    "Method": 0,
+    "TransactionId": "00000000-0000-0000-0000-000000000004"
+  }
+]

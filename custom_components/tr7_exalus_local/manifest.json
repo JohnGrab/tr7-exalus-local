@@ -1,0 +1,13 @@
+{
+  "domain": "tr7_exalus_local",
+  "name": "TR7 Exalus Local",
+  "codeowners": ["@JohnGrab"],
+  "config_flow": true,
+  "documentation": "https://github.com/JohnGrab/tr7-exalus-local",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/JohnGrab/tr7-exalus-local/issues",
+  "loggers": ["websockets"],
+  "requirements": ["websockets>=14.0"],
+  "version": "1.0.0"
+}

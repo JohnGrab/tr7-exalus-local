@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "TR7 Exalus (Lokal) einrichten",
+        "description": "Geben Sie die Verbindungsdaten für Ihre TR7-Steuereinheit ein. Beispiel: {example_host}",
+        "data": {
+          "host": "Host (IP-Adresse)",
+          "port": "Port",
+          "serial_number": "Seriennummer",
+          "pin": "PIN"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen. Überprüfen Sie Host/IP und stellen Sie sicher, dass die TR7-Einheit in Ihrem Netzwerk erreichbar ist.",
+      "invalid_auth": "Authentifizierung fehlgeschlagen. Überprüfen Sie die Seriennummer und PIN auf dem Geräteetikett.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "abort": {
+      "already_configured": "Dieses TR7-Gerät ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "TR7 Exalus Optionen",
+        "description": "Konfigurieren Sie Optionen für die TR7 Exalus Integration."
+      }
+    }
+  }
+}

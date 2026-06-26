@@ -1,0 +1,18 @@
+[project]
+name = "tr7-exalus-local"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = ["websockets>=14.0"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-homeassistant-custom-component>=0.13",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["live: requires a real TR7 device (skipped by default)"]
+addopts = "-m 'not live'"
