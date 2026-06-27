@@ -49,6 +49,8 @@ class TR7Client:
         self._pending_responses: dict[str, asyncio.Future] = {}
         self._receive_task: Optional[asyncio.Task] = None
         self._last_command_time: dict[str, float] = {}
+        self._on_disconnect: Optional[Callable[[], None]] = None
+        self._session_started: Optional[float] = None
 
     @property
     def uri(self) -> str:
@@ -69,16 +71,33 @@ class TR7Client:
         return self._authenticated
 
     @property
+    def session_age(self) -> Optional[float]:
+        """Seconds since the current session authenticated, or None if not logged in."""
+        if self._session_started is None:
+            return None
+        return time.monotonic() - self._session_started
+
+    @property
+    def has_pending_requests(self) -> bool:
+        """True while one or more requests are awaiting a response."""
+        return bool(self._pending_responses)
+
+    @property
     def devices(self) -> dict[str, dict]:
         """Return all known devices."""
         return self._devices
 
-    async def connect(self) -> bool:
-        """Establish a WebSocket connection and authenticate.
+    async def connect(self, login: bool = True) -> bool:
+        """Establish a WebSocket connection and (optionally) authenticate.
 
-        Returns True on success, False on failure.
+        Returns True on success, False on failure. Pass login=False to only open
+        the socket — lets callers (e.g. the config flow) distinguish a transport
+        failure from an authentication failure by logging in as a separate step.
         """
         try:
+            # Drop any previous socket/receive task so a reconnect starts clean.
+            await self._teardown()
+
             _LOGGER.info("Connecting to TR7 at %s", self.uri)
             self._ws = await ws_connect(
                 self.uri,
@@ -92,8 +111,13 @@ class TR7Client:
 
             await asyncio.sleep(0.1)
 
-            if self.email and self.password:
-                return await self.login()
+            if login and self.email and self.password:
+                if await self.login():
+                    return True
+                # Login failed (e.g. timed out): don't leave an open but
+                # unauthenticated socket that is_connected would report healthy.
+                await self._teardown()
+                return False
 
             return True
 
@@ -102,20 +126,84 @@ class TR7Client:
             return False
 
     async def disconnect(self) -> None:
-        """Close the connection cleanly."""
-        if self._receive_task:
+        """Close the connection cleanly (e.g. on unload)."""
+        self._on_disconnect = None
+        await self._teardown()
+        _LOGGER.info("Disconnected")
+
+    async def _teardown(self) -> None:
+        """Cancel the receive task, close the socket, and fail pending requests.
+
+        Safe to call when nothing is connected. Used by both disconnect() and
+        connect() so a reconnect never leaks the old socket/receive task.
+        """
+        if self._receive_task is not None:
             self._receive_task.cancel()
             try:
                 await self._receive_task
             except asyncio.CancelledError:
                 pass
+            self._receive_task = None
 
-        if self._ws:
-            await self._ws.close()
+        if self._ws is not None:
+            try:
+                await self._ws.close()
+            except Exception:  # best-effort close
+                pass
             self._ws = None
 
         self._authenticated = False
-        _LOGGER.info("Disconnected")
+        self._session_started = None
+
+        # Don't leave callers awaiting a response that will never arrive.
+        for future in self._pending_responses.values():
+            if not future.done():
+                future.set_exception(ConnectionError("Connection reset"))
+        self._pending_responses.clear()
+
+    def set_disconnect_callback(self, callback: Optional[Callable[[], None]]) -> None:
+        """Register a callback invoked when the receive loop detects a drop."""
+        self._on_disconnect = callback
+
+    async def renew_session(self) -> bool:
+        """Re-login to refresh the session, unless a request is in flight.
+
+        Re-checking here — immediately before reconnecting — keeps a proactive
+        renewal from tearing down the socket out from under a command that was
+        issued after the caller's own idle check. Returns True (keep the current,
+        still-valid session) when busy, otherwise the result of reconnecting.
+        """
+        if self.has_pending_requests:
+            return True
+        _LOGGER.info("Renewing TR7 session (proactive re-login)")
+        return await self.connect()
+
+    async def async_heartbeat(self, timeout: float = 5.0) -> bool:
+        """Probe the live connection and report whether the TR7 still answers.
+
+        Liveness means "the controller sent a transaction-matched response",
+        regardless of its status — a *denied* request (Status 4) still proves the
+        session is alive. This detects a 'zombie' socket that is still OPEN but
+        whose authenticated session the controller has silently dropped (commands
+        then time out with no reply).
+
+        We probe ``/devices/`` (a cheap config endpoint the installator account
+        is denied, so it returns a small Status-4 ack) rather than
+        ``/devices/channels/states`` — the latter returns no matched response and
+        instead re-pushes every device's full state on every call.
+        """
+        if not self.is_connected:
+            return False
+        try:
+            await self._send_request(
+                resource="/devices/",
+                method=TR7Method.GET,
+                data={},
+                timeout=timeout,
+            )
+        except (TimeoutError, ConnectionError):
+            return False
+        return True
 
     async def login(self) -> bool:
         """Authenticate with the TR7 system.
@@ -131,6 +219,7 @@ class TR7Client:
 
             if response.get("Status") == 0:
                 self._authenticated = True
+                self._session_started = time.monotonic()
                 _LOGGER.info("Login successful")
                 await self._request_device_states()
                 return True
@@ -291,6 +380,7 @@ class TR7Client:
         resource: str,
         method: TR7Method,
         data: dict[str, Any],
+        timeout: float = 10.0,
     ) -> dict:
         """Send a request and wait for the matching response.
 
@@ -315,7 +405,7 @@ class TR7Client:
             await self._ws.send(json.dumps(message))
             _LOGGER.debug(">>> SEND: %s", message)
 
-            response = await asyncio.wait_for(future, timeout=10.0)
+            response = await asyncio.wait_for(future, timeout=timeout)
             return response
 
         except asyncio.TimeoutError:
@@ -327,6 +417,7 @@ class TR7Client:
 
     async def _receive_loop(self) -> None:
         """Receive and dispatch messages from the server."""
+        notify = True
         try:
             async for message in self._ws:
                 try:
@@ -354,9 +445,24 @@ class TR7Client:
 
         except websockets.exceptions.ConnectionClosed:
             _LOGGER.warning("Connection closed")
-            self._authenticated = False
+        except asyncio.CancelledError:
+            # Deliberate teardown (disconnect/reconnect) — don't self-notify.
+            notify = False
+            raise
         except Exception as e:
             _LOGGER.error("Receive loop error: %s", e)
+        finally:
+            # The socket is gone — mark unauthenticated (keep session_age in sync
+            # so it never reports an age for a dead session) and, unless we were
+            # cancelled on purpose, notify the owner so it can reconnect
+            # immediately instead of waiting for the next poll.
+            self._authenticated = False
+            self._session_started = None
+            if notify and self._on_disconnect is not None:
+                try:
+                    self._on_disconnect()
+                except Exception as e:  # callback must never kill the loop
+                    _LOGGER.error("Disconnect callback error: %s", e)
 
     async def _handle_status_update(self, data: dict) -> None:
         """Process a state-changed push notification from the server."""

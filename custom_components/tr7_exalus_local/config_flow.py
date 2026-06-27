@@ -37,12 +37,12 @@ async def validate_connection(
     client = TR7Client(host=host, port=port, email=email, password=password)
 
     try:
-        if not await client.connect():
-            # The socket opened but login failed -> bad serial/PIN.
-            # The socket never opened -> host unreachable.
-            if client.is_connected:
-                raise InvalidAuth
+        # Open the socket first (no login), then authenticate as a separate
+        # step, so we can tell a transport failure from a bad serial/PIN.
+        if not await client.connect(login=False):
             raise CannotConnect
+        if not await client.login():
+            raise InvalidAuth
 
         await asyncio.sleep(2)
 
