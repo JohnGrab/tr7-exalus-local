@@ -197,4 +197,4 @@ Config entries and device assignments are preserved across updates.
 
 ## Further Questions?
 
-→ [GitHub Discussions](https://github.com/IHR-USERNAME/tr7-exalus-local/discussions)
+→ [GitHub Discussions](https://github.com/JohnGrab/tr7-exalus-local/discussions)

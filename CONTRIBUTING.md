@@ -35,7 +35,7 @@ Open a GitHub Issue or Discussion describing what the feature should do and why 
 ### Development Setup
 
 ```bash
-git clone https://github.com/IHR-USERNAME/tr7-exalus-local.git
+git clone https://github.com/JohnGrab/tr7-exalus-local.git
 cd tr7-exalus-local
 
 python3 -m venv .venv

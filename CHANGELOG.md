@@ -42,9 +42,9 @@ Release candidate for broader testing before a stable release.
 
 ## Links
 
-- **GitHub**: https://github.com/IHR-USERNAME/tr7-exalus-local
-- **Issues**: https://github.com/IHR-USERNAME/tr7-exalus-local/issues
-- **Discussions**: https://github.com/IHR-USERNAME/tr7-exalus-local/discussions
+- **GitHub**: https://github.com/JohnGrab/tr7-exalus-local
+- **Issues**: https://github.com/JohnGrab/tr7-exalus-local/issues
+- **Discussions**: https://github.com/JohnGrab/tr7-exalus-local/discussions
 
-**[Unreleased]**: https://github.com/IHR-USERNAME/tr7-exalus-local/compare/v1.0.0...HEAD  
-**[0.0.1-RC]**: https://github.com/IHR-USERNAME/tr7-exalus-local/releases/tag/v0.0.1-RC
+**[Unreleased]**: https://github.com/JohnGrab/tr7-exalus-local/compare/v0.0.1-RC...HEAD  
+**[0.0.1-RC]**: https://github.com/JohnGrab/tr7-exalus-local/releases/tag/v0.0.1-RC

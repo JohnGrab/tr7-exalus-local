@@ -24,7 +24,7 @@ A custom Home Assistant integration for **local** control of Exalus Home roller 
 1. Open HACS
 2. Click **Integrations**
 3. Click the menu (⋮) in the top right → **Custom repositories**
-4. Add: `https://github.com/IHR-USERNAME/tr7-exalus-local` — Category: **Integration**
+4. Add: `https://github.com/JohnGrab/tr7-exalus-local` — Category: **Integration**
 5. Search for **TR7 Exalus Local** and install
 6. Restart Home Assistant
 
@@ -159,7 +159,7 @@ MIT — see [LICENSE](LICENSE)
 
 - [Home Assistant](https://www.home-assistant.io/)
 - [Exalus Home System](https://www.tr7.pl/en/exalus-home-system/)
-- [GitHub Issues](https://github.com/IHR-USERNAME/tr7-exalus-local/issues)
+- [GitHub Issues](https://github.com/JohnGrab/tr7-exalus-local/issues)
 
 ---
 
