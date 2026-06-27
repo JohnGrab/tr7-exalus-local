@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/JohnGrab/tr7-exalus-local/issues",
   "loggers": ["websockets"],
   "requirements": ["websockets>=14.0"],
-  "version": "1.0.0"
+  "version": "0.0.1-RC"
 }

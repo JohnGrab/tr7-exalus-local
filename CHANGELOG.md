@@ -1,4 +1,4 @@
-yes# Changelog
+# Changelog
 
 All notable changes are documented here.  
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) · Versioning: [SemVer](https://semver.org/)
@@ -10,7 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) · Versioning: 
 - Scenes integration
 - Diagnostics platform
 
-## [1.0.0] - 2026-03-09
+## [0.0.1-RC] - 2026-06-27
+
+Release candidate for broader testing before a stable release.
 
 ### Added
 - Full Home Assistant custom component for TR7 Exalus roller blinds
@@ -27,7 +29,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) · Versioning: 
 ### Requirements
 - Home Assistant ≥ 2026.4.4
 - Python ≥ 3.12
-- websockets ≥ 12.0
+- websockets ≥ 16.0
 - TR7 Exalus control unit + EX-BIDI roller motors
 
 ---
@@ -45,4 +47,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) · Versioning: 
 - **Discussions**: https://github.com/IHR-USERNAME/tr7-exalus-local/discussions
 
 **[Unreleased]**: https://github.com/IHR-USERNAME/tr7-exalus-local/compare/v1.0.0...HEAD  
-**[1.0.0]**: https://github.com/IHR-USERNAME/tr7-exalus-local/releases/tag/v1.0.0
+**[0.0.1-RC]**: https://github.com/IHR-USERNAME/tr7-exalus-local/releases/tag/v0.0.1-RC
