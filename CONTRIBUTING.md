@@ -85,6 +85,32 @@ cp -r custom_components/tr7_exalus_local ~/.homeassistant/custom_components/
 # Restart HA, add the integration, verify a cover entity appears
 ```
 
+### Checking Home Assistant compatibility
+
+`pytest-homeassistant-custom-component` (PHACC) pins a specific Home Assistant
+core version per release, so installing the **latest** PHACC and running the unit
+tests is a faithful "does this still work on the newest HA?" probe — the tests
+import the HA-dependent modules (`cover.py` → `coordinator.py` → HA APIs), so a
+removed/changed API surfaces as a failure.
+
+```bash
+# Test against the newest Home Assistant
+pip install -U pytest-homeassistant-custom-component
+pytest tests/unit/ -v
+
+# Manifest / hacs.json sanity (validates only this integration, no .venv noise)
+./scripts/hacs_validate.sh
+```
+
+If the tests fail, the integration needs an update for that HA version — check
+the target release's *"Breaking changes / Deprecations for custom integrations"*
+notes.
+
+This runs automatically too: the **HA Compatibility** workflow
+(`.github/workflows/ha-compatibility.yml`) performs the same check weekly (and
+on demand via *Actions → Run workflow*), opening a `ha-compatibility` GitHub
+issue if it breaks and closing it once it passes again.
+
 ### Code Standards
 
 - **PEP 8** style, **type hints** on all signatures

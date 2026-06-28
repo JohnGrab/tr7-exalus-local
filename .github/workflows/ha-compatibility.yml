@@ -1,0 +1,103 @@
+name: HA Compatibility
+
+# Reactively checks whether the integration still works against the NEWEST
+# Home Assistant release, and opens a deduplicated GitHub issue if it breaks.
+#
+# How it works: pytest-homeassistant-custom-component (PHACC) pins a specific HA
+# core version per release. We install the latest PHACC and run the unit tests
+# (which import the HA-dependent modules: cover.py -> coordinator.py -> HA APIs).
+# A failure means a new HA release needs an integration update.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # weekly, Monday 06:00 UTC
+  workflow_dispatch: {}    # also a manual "check now" button
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  compat:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      # Force the absolute latest PHACC -> latest HA core. An install failure
+      # here (e.g. HA dropped our Python floor) is itself a valid "needs update"
+      # signal and must reach the failure path below.
+      - name: Install against latest Home Assistant
+        run: |
+          pip install -e ".[dev]"
+          pip install -U pytest-homeassistant-custom-component
+
+      - name: Record resolved HA version
+        id: ha
+        run: |
+          version="$(pip show homeassistant | awk '/^Version:/{print $2}')"
+          echo "version=${version:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "Testing against Home Assistant ${version:-unknown}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run unit tests
+        run: pytest tests/unit/ -v
+
+      # Note: manifest/hacs.json schema is validated separately by the daily
+      # "Validate with HACS" workflow; the pytest run above is the authoritative
+      # HA-version compatibility signal (it imports the HA-dependent modules).
+
+      # --- notification: open/refresh a single tracking issue on failure ------
+      - name: Report compatibility failure
+        if: failure()
+        run: |
+          label="ha-compatibility"
+          ha="${{ steps.ha.outputs.version }}"
+          [ -n "$ha" ] || ha="unknown"
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          # Self-bootstrap the label (idempotent).
+          gh label create "$label" \
+            --description "Integration broke against a new Home Assistant version" \
+            --color "B60205" 2>/dev/null || true
+
+          existing="$(gh issue list --label "$label" --state open \
+            --json number --jq '.[0].number' 2>/dev/null || true)"
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body \
+              "Still failing as of $(date -u +%Y-%m-%d) — Home Assistant ${ha}. Run: ${run_url}"
+          else
+            body="$(printf '%s\n' \
+              "The scheduled compatibility check failed against **Home Assistant ${ha}**." \
+              "" \
+              "The integration likely needs an update for this Home Assistant version" \
+              "(removed/deprecated API, changed signature, or manifest-schema change)." \
+              "" \
+              "- Failed run: ${run_url}" \
+              "- Reproduce locally: \`pip install -U pytest-homeassistant-custom-component && pytest tests/unit/ -v\`" \
+              "" \
+              "Auto-managed: commented on while it keeps failing, closed automatically once it passes again.")"
+            gh issue create \
+              --title "HA compatibility check failed (HA ${ha})" \
+              --label "$label" \
+              --assignee "${{ github.repository_owner }}" \
+              --body "$body"
+          fi
+
+      # --- recovery: auto-close the tracking issue once green again -----------
+      - name: Clear tracking issue on success
+        if: success()
+        run: |
+          label="ha-compatibility"
+          ha="${{ steps.ha.outputs.version }}"
+          existing="$(gh issue list --label "$label" --state open \
+            --json number --jq '.[0].number' 2>/dev/null || true)"
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment \
+              "Compatibility check passed on $(date -u +%Y-%m-%d) (HA ${ha}). Closing."
+          fi
